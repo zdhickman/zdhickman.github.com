@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Zdhickman by zdhickman</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Zdhickman</h1>
+        <p>My Blog</p>
+
+        <p class="view"><a href="https://github.com/zdhickman/zdhickman">View the Project on GitHub <small>zdhickman/zdhickman</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/zdhickman/zdhickman/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/zdhickman/zdhickman/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/zdhickman/zdhickman">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>`A leafy binary tree is a binary tree with the symbol 'leaf at its leafs.</p>
+
+<p>Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height n.</p>
+
+<p>Hint: Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height equal or less than n.`</p>
+
+<p>This was a problem in my Fundamentals of Computer Science class that a lot of people struggled with. Here is the step-by-step on solving this problem. Note that the height means the length of the longest branch in the binary tree.</p>
+
+<p>Based on the recommendation within the problem, we will first be designing a function that generates trees with the heights less than or equal to the given n. It should also be noted that each node is required to have two branches extending from it.</p>
+
+<p>The first step was figuring out the pattern, or algorithm, to this problem. If you took out a whiteboard and drew out the result for height(1, 2, 3), you can notice a striking pattern. Put simply, the results of n can be made by taking the results of n-1, and combining each result with every other result, including itself, underneath a common node.</p>
+
+<p>An example of this is shown when finding all binary trees of height less than or equal to 2. We start at our base case, which would be when 0 is input, since our function must deal with all natural numbers. A height of 0 means no branches exist, and since we determine the node itself must have two branches, the only option for height 0 must be a single leaf. Given that the answer must be in a list, the resulting list would be (list ‘leaf).</p>
+
+<p>According to the pattern previously described, if we took every combination in this list, there would only be one combination: a ‘leaf and a ‘leaf. Inserting this under a common node results in: (make-node ‘leaf ‘leaf). And, of course, we still have our base case result for 0, resulting in a final list: (list (make-node ‘leaf ‘leaf) ‘leaf).</p>
+
+<p>Finally, we will use this result list to generate all trees with heights less than or equal to 2. Our resulting list is as follows:</p>
+
+<p><code>(list (make-node (make-node ‘leaf ‘leaf) (make-node ‘leaf ‘leaf)) (make-node (make-node ‘leaf ‘leaf) ‘leaf) (make-node ‘leaf (make-node ‘leaf ‘leaf)) (make-node ‘leaf ‘leaf) ‘leaf)</code></p>
+
+<p>This pattern can be applied recursively to generate trees of any height. So: how do we code this?</p>
+
+<p>Let’s start by defining our node-struct:</p>
+
+<p><code>(define-struct node (left right))</code></p>
+
+<p>Next, we have to critically think of how to apply each member of a list to a make-node with every other member of the list, including itself. We have some functions that we can use that deal with lists. In this case, I decided to use map. Let’s start by using the map function to put each member of the list into one branch of the make-node.</p>
+
+<p><code>(map (lambda (tree-right)
+(make-node ???? tree-right)
+our-trees)</code></p>
+
+<p>What does this do? We are using our anonymous function which takes each member of the our-trees list (which will be explained in a second), and sticks it into a make-node along with….something else. What is this something else? Well, it’s the list, again. So, let’s use map; again!</p>
+
+<p><code>(map (lambda (tree-left)
+(map (lambda (tree-right)
+(make-node tree-left tree-right)
+our-trees))
+our-trees))</code></p>
+
+<p>Every time the inner loop creates a set of make-nodes for each member of our list, the outer loop will add a member of the list into the node. This repeats until every combination is created.</p>
+
+<p>We still haven’t defined our-trees yet, but we’ll get to that later.</p>
+
+<p>Technically, our function right now creates a lot of lists. We want one list. How can we accumulate our lists into one large list? Why not foldr?</p>
+
+<p><code>(foldr append
+(list ‘leaf)
+(map (lambda (tree-left)
+(map (lambda (tree-right)
+(make-node tree-left tree-right)
+our-trees))
+our-trees)))</code></p>
+
+<p>We’re almost done! This code tells use that we want to use append on each list, recursively adding them to one large list until we reach our base case, which sticks a ‘leaf in on the end.</p>
+
+<p>Only two things are left:</p>
+
+<p>figure out what our-trees is, and
+deal with our base case when we build our actual function.
+Remember that when we figured out our initial algorithm, we decided that trees less than or equal to height n were made from the trees less than or equal to height n-1. Therefore, our-trees is the result of passing our function n-1 instead of n. Recursion! Let’s use a local function:</p>
+
+<p><code>(local [(define our-trees (gen-all-trees (sub1 n)))]
+(foldr append
+(list ‘leaf)
+(map (lambda (tree-left)
+(map (lambda (tree-right)
+(make-node tree-left tree-right)
+our-trees))
+our-trees))))</code></p>
+
+<p>I decided to name our overall function gen-all-trees, and our-trees calls this function with one less than the original input.</p>
+
+<p>We’re almost done! What about our base case of 0? It just returns (list ‘leaf), and our recursion has to end somewhere. Let’s finish this function.</p>
+
+<p><code>(define (gen-all-trees n)
+(cond
+[(= 0 n) (list 'leaf)]
+[else    (local [(define our-trees (gen-all-trees (sub1 n)))]
+(foldr append
+(list ‘leaf)
+(map (lambda (tree-left)
+(map (lambda (tree-right)
+(make-node tree-left tree-right)
+our-trees))
+our-trees))))]))</code></p>
+
+<p>Finally, we need our actual answer: trees with heights equal to n. We just need to run a filter based on the height of the tree (an easy function to write: find the longest branch!).</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/zdhickman">zdhickman</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
