@@ -28,11 +28,9 @@
         </ul>
       </header>
       <section>
-        <p>`A leafy binary tree is a binary tree with the symbol 'leaf at its leafs.</p>
-
-<p>Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height n.</p>
-
-<p>Hint: Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height equal or less than n.`</p>
+        <p><code>A leafy binary tree is a binary tree with the symbol 'leaf at its leafs.
+Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height n.
+Hint: Design a function that consumes a natural number n and creates (a list of) all leafy binary trees of height equal or less than n.</code></p>
 
 <p>This was a problem in my Fundamentals of Computer Science class that a lot of people struggled with. Here is the step-by-step on solving this problem. Note that the height means the length of the longest branch in the binary tree.</p>
 
@@ -46,7 +44,10 @@
 
 <p>Finally, we will use this result list to generate all trees with heights less than or equal to 2. Our resulting list is as follows:</p>
 
-<p><code>(list (make-node (make-node ‘leaf ‘leaf) (make-node ‘leaf ‘leaf)) (make-node (make-node ‘leaf ‘leaf) ‘leaf) (make-node ‘leaf (make-node ‘leaf ‘leaf)) (make-node ‘leaf ‘leaf) ‘leaf)</code></p>
+<p><code>(list (make-node (make-node ‘leaf ‘leaf) (make-node ‘leaf ‘leaf))
+               (make-node (make-node ‘leaf ‘leaf) ‘leaf) 
+               (make-node ‘leaf (make-node ‘leaf ‘leaf)) 
+               (make-node ‘leaf ‘leaf) ‘leaf)</code></p>
 
 <p>This pattern can be applied recursively to generate trees of any height. So: how do we code this?</p>
 
